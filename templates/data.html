@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+<header>
+    <div class="container">
+        <h1 class="logo">Динамика изменения эмоций</h1>
+        <h1 class="rule">Предварительный просмотр загруженных данных</h1>
+    </div>
+</header>
+<div class="divider"></div>
+
+<form method="POST">
+
+    <div style="margin-top: 24px">
+        <a class="select">Выбери столбец изучаемого текста </a>
+        <select name="columnText">
+            {% for column in columns %}
+                <option value="{{ column }}" SELECTED>{{ column }}</option>"
+            {% endfor %}
+        </select>
+    </div>
+    <div style="margin-top: 8px">
+        <a class="select">Выбери столбец времени </a>
+        <select name="columnTime">
+            {% for column in columns %}
+                <option value="{{ column }}" SELECTED>{{ column }}</option>"
+            {% endfor %}
+        </select>
+    </div>
+    <div style="margin-top: 8px">
+        <a class="select">Выбери столбец id пользователя </a>
+        <select name="columnId">
+            {% for column in columns %}
+                <option value="{{ column }}" SELECTED>{{ column }}</option>"
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <button type="submit" class="button">Получить результат</button>
+    </div>
+</form>
+
+<div align="center">
+    <table>
+        <h1>
+            {% for table in tables %}
+                <h2>{{ titles[loop.index] }}</h2>
+                {{ table|safe }}
+            {% endfor %}
+        </h1>
+    </table>
+</div>
+</body>
+</html>
