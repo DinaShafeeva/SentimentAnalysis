@@ -82,11 +82,19 @@ def redirect_to_result(name, column_text, column_time, column_id):
 
 @app.route("/data/<name>", methods=['GET', 'POST'])
 def post_result(name):
-    data = pd.read_csv('upload/' + name)
+    file_format = name[name.rfind('.'):]
+    current_name = name
+    if file_format == '.csv':
+        data = pd.read_csv('upload/' + name)
+    else:
+        data = pd.read_json('upload/' + name)
+        current_name = name[:name.rfind('.')] + '.csv'
+        data.to_csv('upload/' + current_name)
+
     columns = data.columns.values.tolist()
 
     if request.method == 'POST':
-        return redirect(url_for('redirect_to_result', name=name, column_text=request.form.get('columnText'),
+        return redirect(url_for('redirect_to_result', name=current_name, column_text=request.form.get('columnText'),
                                 column_time=request.form.get('columnTime'), column_id=request.form.get('columnId')))
 
     return render_template('data.html', tables=[data.to_html()], titles=[''], columns=columns)
