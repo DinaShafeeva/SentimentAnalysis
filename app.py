@@ -10,6 +10,7 @@ from flask import Flask, request, redirect, url_for, render_template, flash
 from transformers import TextClassificationPipeline
 from werkzeug.utils import secure_filename
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 UPLOAD_FOLDER = 'upload'
 
@@ -71,7 +72,7 @@ def redirect_to_result(name, column_text, column_time, column_id):
             piper = pipe(row[column_text])
             list = [d['score'] for d in piper[0]]
             print(labels[np.argmax(list)])
-            x.append(row[column_time])
+            x.append(datetime.strptime(row[column_time], '%d/%m/%y %H:%M:%S'))
             y.append(get_emotion_value(labels[np.argmax(list)]))
             plt.plot(x, y, marker="o", markersize=5)
 
