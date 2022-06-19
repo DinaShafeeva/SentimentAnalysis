@@ -1,16 +1,14 @@
 import os
 import pickle
 
-import numpy as np
 import pandas as pd
-import transformers
 import torch
 
 from flask import Flask, request, redirect, url_for, render_template, flash
 from transformers import TextClassificationPipeline
 from werkzeug.utils import secure_filename
-import matplotlib.pyplot as plt
-from datetime import datetime
+
+from graph_module import GraphModule
 
 UPLOAD_FOLDER = 'upload'
 
@@ -22,25 +20,6 @@ model = pickle.load(open('model/second_model.sav', 'rb'))
 tokenizer = torch.hub.load('huggingface/pytorch-transformers', 'tokenizer', 'DeepPavlov/rubert-base-cased')
 pipe = TextClassificationPipeline(model=model, tokenizer=tokenizer, return_all_scores=True)
 labels = ['anger', 'sadness', 'neutral', 'joy', 'surprise', 'shame', 'disgust', 'fear']
-
-
-def get_emotion_value(emotion):
-    if emotion == 'anger':
-        return -4
-    if emotion == 'sadness':
-        return -2
-    if emotion == 'neutral':
-        return 0
-    if emotion == 'joy':
-        return 2
-    if emotion == 'surprise':
-        return 5
-    if emotion == 'shame':
-        return -1
-    if emotion == 'disgust':
-        return -3.5
-    if emotion == 'fear':
-        return -3
 
 
 @app.route("/")
@@ -55,29 +34,9 @@ def get_upload():
 
 @app.route("/result/<name>/<column_text>/<column_time>/<column_id>", methods=['GET', 'POST'])
 def redirect_to_result(name, column_text, column_time, column_id):
-    data = pd.read_csv('upload/' + name)
-    fig, ax = plt.subplots(nrows=1, ncols=1)
-    plt.yticks([-4, -3.5, -3, -2, -1, 0, 2, 5],
-               ['злость', 'отвращ.', 'страх', 'грусть', 'стыд', 'нейтр.', 'счастье', 'удивл.'])
-    plt.xlabel('время')
+    graph_module = GraphModule()
+    graph_module.create_graph(name, column_id, column_text, column_time)
 
-    user_count = data[column_id].nunique(dropna=False)
-    dfs = dict(tuple(data.groupby(column_id)))
-    print(user_count)
-    for i in range(user_count):
-        x = []
-        y = []
-        for index, row in dfs[i].iterrows():
-            print(row[column_text])
-            piper = pipe(row[column_text])
-            list = [d['score'] for d in piper[0]]
-            print(labels[np.argmax(list)])
-            x.append(datetime.strptime(row[column_time], '%d/%m/%y %H:%M:%S'))
-            y.append(get_emotion_value(labels[np.argmax(list)]))
-            plt.plot(x, y, marker="o", markersize=5)
-
-    fig.savefig('static/plot.png')
-    plt.close(fig)
     return render_template('result.html')
 
 
